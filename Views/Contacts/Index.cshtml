@@ -1,0 +1,68 @@
+﻿@model List<ContactosApp.Models.Contact>
+
+<h2>Contact List</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add New Contact</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th style="width: 150px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contact in Model)
+        {
+            <tr>
+                <td>@contact.Name</td>
+                <td>@contact.Email</td>
+                <td>@contact.Phone</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@contact.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="@contact.Id" data-name="@contact.Name">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="contactName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modal = document.getElementById('confirmDeleteModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const contactId = button.getAttribute('data-id');
+            const contactName = button.getAttribute('data-name');
+
+            const nameSpan = modal.querySelector('#contactName');
+            nameSpan.textContent = contactName;
+
+            const confirmButton = modal.querySelector('#confirmDeleteBtn');
+            confirmButton.href = `/Contacts/Delete/${contactId}`;
+        });
+    </script>
+}

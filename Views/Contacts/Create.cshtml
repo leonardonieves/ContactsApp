@@ -1,0 +1,23 @@
+﻿@model ContactosApp.Models.Contact
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="@ViewContext.RouteData.Values["action"]">
+    <div>
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div>
+        <label asp-for="Phone"></label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+    <button type="submit">Save</button>
+</form>
+<a asp-action="Index">Back to List</a>
