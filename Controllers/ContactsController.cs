@@ -1,5 +1,6 @@
 ﻿using ContactosApp.Data;
 using ContactosApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
@@ -7,6 +8,7 @@ using System.Diagnostics.Contracts;
 
 namespace ContactosApp.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class ContactsController : Controller
     {
         private readonly AppDbContext _context;

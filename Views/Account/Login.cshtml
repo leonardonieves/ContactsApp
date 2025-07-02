@@ -1,0 +1,43 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Login";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Login - ContactosApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-header text-center">
+                        <h4>Login</h4>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Login" method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+                            <div class="mb-3">
+                                <label>Email</label>
+                                <input name="email" type="text" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label>Password</label>
+                                <input name="password" type="password" class="form-control" required />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger mt-2">@TempData["ErrorMessage"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

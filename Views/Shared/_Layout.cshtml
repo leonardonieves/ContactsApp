@@ -1,52 +1,133 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ContactosApp</title>
+    <title>@ViewData["Title"] - ContactsApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ContactosApp.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: #343a40;
+            color: white;
+            padding-top: 1rem;
+        }
+
+            .sidebar a {
+                color: #ddd;
+                text-decoration: none;
+                padding: 10px;
+                display: block;
+            }
+
+                .sidebar a:hover {
+                    background-color: #495057;
+                    color: white;
+                }
+
+        .content {
+            flex-grow: 1;
+            padding: 1rem;
+        }
+
+        .topbar {
+            height: 60px;
+            background-color: #f8f9fa;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .avatar-dropdown {
+            position: relative;
+        }
+
+        .avatar-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+            min-width: 160px;
+            z-index: 1000;
+        }
+
+            .avatar-dropdown-menu a {
+                display: block;
+                padding: 10px;
+                color: black;
+                text-decoration: none;
+            }
+
+                .avatar-dropdown-menu a:hover {
+                    background-color: #f2f2f2;
+                }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ContactosApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Contacts" asp-action="Index">Contacts</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    <div class="sidebar">
+        <h4 class="text-white px-3 mb-4">📇 ContactosApp</h4>
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Home</a>
+        @if (User.IsInRole("admin"))
+        {
+            <a asp-controller="Contacts" asp-action="Index"><i class="bi bi-person-lines-fill"></i> Contacts</a>
+        }
+        <hr class="text-light" />
+        <a asp-controller="Home" asp-action="Privacy"><i class="bi bi-shield-lock"></i> Privacy</a>
+    </div>
+
+    <div class="content">
+        <div class="topbar">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="avatar-dropdown">
+                    <img src="https://ui-avatars.com/api/?name=@User.Identity.Name" alt="avatar" width="35" height="35" style="border-radius:50%; cursor:pointer;" onclick="toggleDropdown()" />
+                    <div class="avatar-dropdown-menu dropdown-menu show" style="display: none;" id="avatarDropdown">
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-circle"></i> View Profile</a>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Settings"><i class="bi bi-gear"></i> Settings</a>
+                        <div class="dropdown-divider"></div>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+            }
+        </div>
+
+        <main role="main" class="pt-4">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - ContactosApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById("avatarDropdown");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+        window.addEventListener("click", function (e) {
+            const dropdown = document.getElementById("avatarDropdown");
+            if (!e.target.closest(".avatar-dropdown")) {
+                dropdown.style.display = "none";
+            }
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

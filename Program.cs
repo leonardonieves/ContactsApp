@@ -1,27 +1,95 @@
 ﻿using ContactosApp.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add MVC and views
 builder.Services.AddControllersWithViews();
 
+// Contacts DB (tuya)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("ContactsDB")); // In-memory DB
+    options.UseInMemoryDatabase("ContactsDB"));
 
+// Auth DB (Identity)
+builder.Services.AddDbContext<AuthDbContext>(options =>
+    options.UseInMemoryDatabase("AuthDB"));
+
+// Identity setup
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<AuthDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
+// Build app
 var app = builder.Build();
 
 app.UseStaticFiles();
+
 app.UseRouting();
 
-// Ruta principal -> HomeController
+app.UseAuthentication(); // ➕ Importante para login
+app.UseAuthorization();  // ➕ Importante para roles
+
+// Rutas
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Ruta adicional para ContactsController
 app.MapControllerRoute(
     name: "contacts",
     pattern: "contacts/{action=Index}/{id?}",
     defaults: new { controller = "Contacts" });
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedRolesAndUsersAsync(services);
+}
+
 app.Run();
+
+async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    string[] roles = { "admin", "basic" };
+
+    // Crear roles si no existen
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+
+    // Crear usuario admin
+    var adminEmail = "admin@dev.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+        var result = await userManager.CreateAsync(adminUser, "Admin123!");
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(adminUser, "admin");
+    }
+
+    // Crear usuario basic
+    var basicEmail = "user@dev.com";
+    var basicUser = await userManager.FindByEmailAsync(basicEmail);
+    if (basicUser == null)
+    {
+        basicUser = new IdentityUser { UserName = basicEmail, Email = basicEmail };
+        var result = await userManager.CreateAsync(basicUser, "User123!");
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(basicUser, "basic");
+    }
+}
