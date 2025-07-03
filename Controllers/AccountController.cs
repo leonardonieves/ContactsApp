@@ -1,16 +1,20 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ContactsApp.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace ContactosApp.Controllers
-{
+namespace ContactsApp.Controllers
+{    
     public class AccountController : Controller
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
-        public AccountController(SignInManager<IdentityUser> signInManager)
+        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -48,17 +52,67 @@ namespace ContactosApp.Controllers
             return View();
         }
 
+        [Authorize(Roles = "admin,basic")]
         [HttpGet]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            var userName = User.Identity?.Name ?? "Unknown";
-            var email = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
 
-            ViewBag.UserName = userName;
-            ViewBag.Email = email;
-
-            return View();
+            var model = new ProfileViewModel
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                ProfileImageUrl = user.ProfileImageUrl
+            };
+            return View(model);
         }
 
+        [Authorize(Roles = "admin,basic")]
+        [HttpPost]
+        public async Task<IActionResult> Profile(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            // Actualizamos nombre e imagen
+            user.FullName = model.FullName;
+
+            // TODO: subir imagen si model.ProfileImageFile != null y obtener URL, aquí solo simulamos
+            if (model.ProfileImageFile != null)
+            {
+                // Aquí deberías implementar subida a disco o cloud y asignar la URL resultante
+                // Por ejemplo:
+                // user.ProfileImageUrl = await UploadImageAsync(model.ProfileImageFile);
+            }
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                    ModelState.AddModelError("", error.Description);
+                return View(model);
+            }
+
+            // Cambiar contraseña si el usuario ingresó datos
+            if (!string.IsNullOrEmpty(model.CurrentPassword) &&
+                !string.IsNullOrEmpty(model.NewPassword))
+            {
+                var changePassResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                if (!changePassResult.Succeeded)
+                {
+                    foreach (var error in changePassResult.Errors)
+                        ModelState.AddModelError("", error.Description);
+                    return View(model);
+                }
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            TempData["SuccessMessage"] = "Profile updated successfully.";
+            return RedirectToAction(nameof(Profile));
+        }
     }
 }

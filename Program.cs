@@ -1,4 +1,5 @@
-﻿using ContactosApp.Data;
+﻿using ContactsApp.Data;
+using ContactsApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,21 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add MVC and views
 builder.Services.AddControllersWithViews();
 
-// Contacts DB (tuya)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("ContactsDB"));
 
-// Auth DB (Identity)
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseInMemoryDatabase("AuthDB"));
-
 // Identity setup
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+builder.Services.AddDefaultIdentity<User>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<AuthDbContext>();
+.AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -36,8 +32,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); // ➕ Importante para login
-app.UseAuthorization();  // ➕ Importante para roles
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Rutas
 app.MapControllerRoute(
@@ -60,7 +56,7 @@ app.Run();
 async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
 {
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
     string[] roles = { "admin", "basic" };
 
@@ -76,7 +72,7 @@ async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
     {
-        adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail };
+        adminUser = new User { UserName = adminEmail, Email = adminEmail, FullName = "Admin user", ProfileImageUrl = "" };
         var result = await userManager.CreateAsync(adminUser, "Admin123!");
         if (result.Succeeded)
             await userManager.AddToRoleAsync(adminUser, "admin");
@@ -87,7 +83,7 @@ async Task SeedRolesAndUsersAsync(IServiceProvider serviceProvider)
     var basicUser = await userManager.FindByEmailAsync(basicEmail);
     if (basicUser == null)
     {
-        basicUser = new IdentityUser { UserName = basicEmail, Email = basicEmail };
+        basicUser = new User { UserName = basicEmail, Email = basicEmail, FullName = "Basic User", ProfileImageUrl = "" };
         var result = await userManager.CreateAsync(basicUser, "User123!");
         if (result.Succeeded)
             await userManager.AddToRoleAsync(basicUser, "basic");

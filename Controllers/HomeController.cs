@@ -1,9 +1,9 @@
-using ContactosApp.Models;
+using ContactsApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace ContactosApp.Controllers
+namespace ContactsApp.Controllers
 {
     [Authorize(Roles = "admin,basic")]
     public class HomeController : Controller

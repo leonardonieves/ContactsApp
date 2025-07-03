@@ -1,4 +1,4 @@
-namespace ContactosApp.Models
+namespace ContactsApp.Models
 {
     public class ErrorViewModel
     {

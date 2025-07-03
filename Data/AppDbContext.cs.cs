@@ -1,14 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ContactosApp.Models;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
+﻿using ContactsApp.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-namespace ContactosApp.Data
+namespace ContactsApp.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<User>
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Contact> Contacts { get; set; }
     }

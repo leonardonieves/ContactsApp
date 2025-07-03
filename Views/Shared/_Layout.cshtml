@@ -1,5 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
+@using ContactsApp.Models
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
 
 <!DOCTYPE html>
 <html lang="en">
@@ -80,7 +82,7 @@
 </head>
 <body>
     <div class="sidebar">
-        <h4 class="text-white px-3 mb-4">📇 ContactosApp</h4>
+        <h4 class="text-white px-3 mb-4">📇 ContactsApp</h4>
         <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Home</a>
         @if (User.IsInRole("admin"))
         {
@@ -94,8 +96,14 @@
         <div class="topbar">
             @if (SignInManager.IsSignedIn(User))
             {
+                var currentUser = await UserManager.GetUserAsync(User);
+                var fullName = currentUser?.FullName ?? User.Identity.Name;
+
                 <div class="avatar-dropdown">
-                    <img src="https://ui-avatars.com/api/?name=@User.Identity.Name" alt="avatar" width="35" height="35" style="border-radius:50%; cursor:pointer;" onclick="toggleDropdown()" />
+                    <img src="https://ui-avatars.com/api/?name=@fullName&background=0D8ABC&color=fff"
+                         alt="avatar" width="35" height="35"
+                         style="border-radius:50%; cursor:pointer;"
+                         onclick="toggleDropdown()" />
                     <div class="avatar-dropdown-menu dropdown-menu show" style="display: none;" id="avatarDropdown">
                         <a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-circle"></i> View Profile</a>
                         <a class="dropdown-item" asp-controller="Account" asp-action="Settings"><i class="bi bi-gear"></i> Settings</a>

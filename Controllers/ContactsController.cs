@@ -1,12 +1,12 @@
-﻿using ContactosApp.Data;
-using ContactosApp.Models;
+﻿using ContactsApp.Data;
+using ContactsApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using System.Diagnostics.Contracts;
 
-namespace ContactosApp.Controllers
+namespace ContactsApp.Controllers
 {
     [Authorize(Roles = "admin")]
     public class ContactsController : Controller
